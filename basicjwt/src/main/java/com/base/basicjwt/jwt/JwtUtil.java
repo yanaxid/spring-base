@@ -49,6 +49,7 @@ public class JwtUtil {
          return bearerToken.substring(7);
       }
       return null;
+
    }
 
    // GENERATE TOKEN FROM USERNAME
@@ -99,23 +100,19 @@ public class JwtUtil {
 
          return true;
       } catch (SecurityException e) {
-        log.info("Invalid JWT signature: " + e.getMessage());
+          log.info("Invalid JWT signature: {}", e.getMessage());
       } catch (MalformedJwtException e) {
-         log.info("Invalid JWT token: " + e.getMessage());
+          log.info("Invalid JWT token: {}", e.getMessage());
       } catch (ExpiredJwtException e) {
-         log.info("JWT token is expired: " + e.getMessage());
+          log.info("JWT token is expired: {}", e.getMessage());
       } catch (UnsupportedJwtException e) {
-         log.info("JWT token is unsupported: " + e.getMessage());
+          log.info("JWT token is unsupported: {}", e.getMessage());
       } catch (IllegalArgumentException e) {
-         log.info("JWT claims string is empty: " + e.getMessage());
+          log.info("JWT claims string is empty: {}", e.getMessage());
       }
       return false;
    }
 
- 
-   public boolean isTokenBlacklisted(String token) {
-      return tokenBlacklist.contains(token);
-   }
 
    public void addToBlacklist(String token) {
       tokenBlacklist.add(token);

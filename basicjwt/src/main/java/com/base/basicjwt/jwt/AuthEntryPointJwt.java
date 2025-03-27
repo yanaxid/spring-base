@@ -2,7 +2,6 @@ package com.base.basicjwt.jwt;
 
 
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -18,7 +17,7 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
    public void commence(
          HttpServletRequest request,
          HttpServletResponse response,
-         AuthenticationException authException) throws IOException, ServletException {
+         AuthenticationException authException) throws IOException {
 
       response.setContentType("application/json");
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

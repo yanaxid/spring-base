@@ -6,6 +6,9 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,7 +33,6 @@ import java.util.stream.Collectors;
 public class AuthTokenFilter extends OncePerRequestFilter {
 
 
-
    private final JwtUtil jwtUtils;
    private final CustomUserDetailsService userDetailsService;
   
@@ -49,7 +51,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             List<String> roles = jwtUtils.getRolesFromToken(jwt);
 
             List<GrantedAuthority> authorities = roles.stream()
-                  .map(SimpleGrantedAuthority::new) // Konversi String ke SimpleGrantedAuthority
+                  .map(SimpleGrantedAuthority::new) // konversi String ke SimpleGrantedAuthority
                   .collect(Collectors.toList());
 
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
@@ -63,7 +65,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
          }
       } catch (Exception e) {
-         log.info("Cannot set user authentication: " + e);
+          log.info("Cannot set user authentication: {}", String.valueOf(e));
       }
       filterChain.doFilter(request, response);
    }

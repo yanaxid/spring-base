@@ -2,6 +2,8 @@ package com.base.basicjwt.model;
 
 import java.time.LocalDateTime;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -12,11 +14,13 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Data;
 
-@Data
 @Entity
+@Data
 @Table(name = "app_user")
 @EntityListeners(AuditingEntityListener.class)
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class User {
 
    @Id
@@ -26,10 +30,10 @@ public class User {
    @Column(nullable = false)
    private String fullname;
 
-   @Column(unique = true, nullable = false)
+   @Column(nullable = false)
    private String username;
 
-   @Column(unique = true, nullable = false)
+   @Column(nullable = false)
    private String email;
 
    @Column(nullable = false)

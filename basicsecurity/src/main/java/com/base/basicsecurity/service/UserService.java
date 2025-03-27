@@ -1,10 +1,15 @@
 package com.base.basicsecurity.service;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.base.basicsecurity.dto.UserDto;
@@ -20,14 +25,13 @@ import lombok.RequiredArgsConstructor;
 public class UserService implements UserDetailsService {
 
    private final UserRepository userRepository;
-   private final BCryptPasswordEncoder bCryptPasswordEncoder;
+   private final PasswordEncoder encoder;
 
    @Override
    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
       return userRepository.findByEmail(email)
             .orElseThrow(() -> new UsernameNotFoundException(String.format("user with email %s not found", email)));
    }
-
 
    @Transactional
    public ResponseEntity<String> register(UserDto userDto) {
@@ -43,7 +47,7 @@ public class UserService implements UserDetailsService {
          User user = new User();
          user.setFullname(userDto.getFullname());
          user.setEmail(userDto.getEmail());
-         user.setPassword(bCryptPasswordEncoder.encode(userDto.getPassword()));
+         user.setPassword(encoder.encode(userDto.getPassword()));
          user.setRole(Role.valueOf(userDto.getRole().toUpperCase()));
 
          userRepository.save(user);
@@ -53,6 +57,14 @@ public class UserService implements UserDetailsService {
          return ResponseEntity.badRequest().body("register failed");
       }
 
+   }
+
+   @Bean
+   public AuthenticationManager authenticationManager() {
+      DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+      authProvider.setUserDetailsService(this);
+      authProvider.setPasswordEncoder(encoder);
+      return new ProviderManager(authProvider);
    }
 
 }
