@@ -14,9 +14,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.base.basicjwt.jwt.AuthEntryPointJwt;
 import com.base.basicjwt.jwt.AuthTokenFilter;
-import com.base.basicjwt.jwt.JwtUtil;
-import com.base.basicjwt.service.CustomUserDetailsService;
-
 import lombok.RequiredArgsConstructor;
 
 @Configuration
@@ -25,17 +22,11 @@ import lombok.RequiredArgsConstructor;
 public class WebSecurityConfig {
 
    private final AuthEntryPointJwt unauthorizedHandler;
-   private final JwtUtil jwtUtils;
-   private final CustomUserDetailsService userDetailsService;
-
-   @Bean
-   AuthTokenFilter authenticationJwtTokenFilter(CustomUserDetailsService userDetailsService, JwtUtil jwtUtils) {
-      return new AuthTokenFilter(jwtUtils, userDetailsService);
-   }
+   private final AuthTokenFilter authTokenFilter;
 
    @Bean
    AuthenticationManager authenticationManager(
-         AuthenticationConfiguration authenticationConfiguration) throws Exception {
+           AuthenticationConfiguration authenticationConfiguration) throws Exception {
       return authenticationConfiguration.getAuthenticationManager();
    }
 
@@ -44,19 +35,22 @@ public class WebSecurityConfig {
       return new BCryptPasswordEncoder();
    }
 
+
    @Bean
    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
       http
-            .csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.disable())
-            .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                  .requestMatchers("/api/v1/auth/**", "/api/test/all").permitAll()
-                  .anyRequest().authenticated());
+              .csrf(csrf -> csrf.disable())
+              .cors(cors -> cors.disable())
+              .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
+              .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+              .authorizeHttpRequests(authz -> authz
+                      .requestMatchers("/api/v1/auth/**", "/api/v1/all").permitAll()
+                      .requestMatchers("/api/v1/user").hasAnyAuthority("ADMIN", "USER")
+                      .requestMatchers("/api/v1/admin").hasAuthority("ADMIN")
+                      .anyRequest().authenticated()
+              );
 
-      http.addFilterBefore(authenticationJwtTokenFilter(userDetailsService, jwtUtils),
-            UsernamePasswordAuthenticationFilter.class);
+      http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
       return http.build();
    }
 }

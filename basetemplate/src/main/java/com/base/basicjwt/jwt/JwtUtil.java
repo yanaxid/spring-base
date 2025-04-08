@@ -14,6 +14,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import com.base.basicjwt.repository.BlacklistTokenRepository;
+
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.List;
@@ -24,102 +26,103 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class JwtUtil {
 
-   // SECRET
-   @Value("${jwt.secret}")
-   private String jwtSecret;
+    // SECRET
+    @Value("${jwt.secret}")
+    private String jwtSecret;
 
-   // EXPIRATION
-   @Value("${jwt.expiration}")
-   private int jwtExpirationMs;
+    // EXPIRATION
+    @Value("${jwt.expiration}")
+    private int jwtExpirationMs;
 
-   // SECRET KEY
-   private SecretKey key;
+    // SECRET KEY
+    private SecretKey key;
 
-   private final Set<String> tokenBlacklist = ConcurrentHashMap.newKeySet();
 
-   @PostConstruct
-   public void initKey() {
-      this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
-   }
+    private final BlacklistTokenRepository blacklistTokenRepository;
 
-   // GET JWT FROM HEADER
-   public String parseJwt(HttpServletRequest request) {
-      String bearerToken = request.getHeader("Authorization");
-      if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-         return bearerToken.substring(7);
-      }
-      return null;
-   }
+    public JwtUtil(BlacklistTokenRepository blacklistTokenRepository) {
+        this.blacklistTokenRepository = blacklistTokenRepository;
+    }
 
-   // GENERATE TOKEN FROM USERNAME
-   public String generateToken(UserDetails userDetails) {
-      List<String> roles = userDetails.getAuthorities().stream()
-            .map(GrantedAuthority::getAuthority)
-            .toList();
+    @PostConstruct
+    public void initKey() {
+        this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
+    }
 
-      log.info("Roles in JWT: {}", roles);
+    // GET JWT FROM HEADER
+    public String parseJwt(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
+    }
 
-      return Jwts.builder()
-            .subject(userDetails.getUsername())
-            .claim("roles", roles)
-            .issuedAt(new Date())
-            .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
-            .signWith(key)
-            .compact();
-   }
+    // GENERATE TOKEN FROM USERNAME
+    public String generateToken(UserDetails userDetails) {
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
 
-   // GET USERNAME FROM JWT TOKEN
-   public String getUsernameFromToken(String token) {
-      return Jwts.parser()
-            .verifyWith(key)
-            .build()
-            .parseSignedClaims(token)
-            .getPayload()
-            .getSubject();
-   }
+        log.info("Roles in JWT: {}", roles);
 
-   // GET ROLE FROM JWT TOKEN
-   @SuppressWarnings("unchecked")
-   public List<String> getRolesFromToken(String token) {
-      return Jwts.parser()
-            .verifyWith(key)
-            .build()
-            .parseSignedClaims(token)
-            .getPayload()
-            .get("roles", List.class);
-   }
+        return Jwts.builder()
+                .subject(userDetails.getUsername())
+                .claim("roles", roles)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+                .signWith(key)
+                .compact();
+    }
 
-   // VALIDATE TOKEN
-   public boolean validateJwtToken(String token) {
-      try {
-         Jwts.parser()
-               .verifyWith(key)
-               .build()
-               .parseSignedClaims(token);
+    // GET USERNAME FROM JWT TOKEN
+    public String getUsernameFromToken(String token) {
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getSubject();
+    }
 
-         return true;
-      } catch (SecurityException e) {
-        log.info("Invalid JWT signature: " + e.getMessage());
-      } catch (MalformedJwtException e) {
-         log.info("Invalid JWT token: " + e.getMessage());
-      } catch (ExpiredJwtException e) {
-         log.info("JWT token is expired: " + e.getMessage());
-      } catch (UnsupportedJwtException e) {
-         log.info("JWT token is unsupported: " + e.getMessage());
-      } catch (IllegalArgumentException e) {
-         log.info("JWT claims string is empty: " + e.getMessage());
-      }
-      return false;
-   }
+    // GET ROLE FROM JWT TOKEN
+    @SuppressWarnings("unchecked")
+    public List<String> getRolesFromToken(String token) {
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("roles", List.class);
+    }
 
- 
-   public boolean isTokenBlacklisted(String token) {
-      return tokenBlacklist.contains(token);
-   }
+    // VALIDATE TOKEN
+    public boolean validateJwtToken(String token) {
+        try {
 
-   public void addToBlacklist(String token) {
-      tokenBlacklist.add(token);
-      log.info("Token added to blacklist: {}", token);
-   }
+            // Periksa apakah JWT ada di blacklist sebelum validasi lebih lanjut.
+            if (blacklistTokenRepository.existsByToken(token)) {
+                log.info("JWT is blacklisted: {}", token);
+                return false;
+            }
 
+            Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token);
+
+            return true;
+        } catch (SecurityException e) {
+            log.info("Invalid JWT signature: {}", e.getMessage());
+        } catch (MalformedJwtException e) {
+            log.info("Invalid JWT token: {}", e.getMessage());
+        } catch (ExpiredJwtException e) {
+            log.info("JWT token is expired: {}", e.getMessage());
+        } catch (UnsupportedJwtException e) {
+            log.info("JWT token is unsupported: {}", e.getMessage());
+        } catch (IllegalArgumentException e) {
+            log.info("JWT claims string is empty: {}", e.getMessage());
+        }
+        return false;
+    }
 }

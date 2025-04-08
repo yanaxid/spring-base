@@ -23,6 +23,10 @@ import lombok.Data;
 @NoArgsConstructor
 public class User {
 
+
+
+
+
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
    private Long id;
@@ -45,6 +49,7 @@ public class User {
    @CreatedDate
    @Column(name = "created_date", updatable = false)
    private LocalDateTime createdDate;
+
 
    @LastModifiedDate
    @Column(name = "modified_date")

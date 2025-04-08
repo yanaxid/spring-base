@@ -13,21 +13,21 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthController {
 
-   private final UserService userService;
+    private final UserService userService;
 
-   @PostMapping("/signin")
-   public ResponseEntity<String> signIn(@RequestBody UserDto userDto) {
-      return userService.signIn(userDto);
-   }
+    @PostMapping("/signin")
+    public ResponseEntity<String> signIn(@RequestBody UserDto userDto) {
+        return userService.signIn(userDto);
+    }
 
-   @PostMapping("/signup")
-   public String signUp(@RequestBody User user) {
-      return userService.signUp(user);
-   }
+    @PostMapping("/signup")
+    public String signUp(@RequestBody User user) {
+        return userService.signUp(user);
+    }
 
-   @PostMapping("/logout")
-   public ResponseEntity<String> logOut(HttpServletRequest request) {
-      return userService.logOut(request);
-   }
+    @PostMapping("/logout")
+    public ResponseEntity<String> logOut(HttpServletRequest request) {
+        return userService.logOut(request);
+    }
 
 }

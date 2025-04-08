@@ -18,7 +18,7 @@ public class MessageResponse {
    private int statusCode;
    private String status;
    private Object data;
-   private Object error;
+   private Object errors;
    private Meta meta;
 
    @Data
@@ -42,12 +42,12 @@ public class MessageResponse {
       this.status = status;
    }
 
-   public MessageResponse(String message, int statusCode, String status, Object data, Object error) {
+   public MessageResponse(String message, int statusCode, String status, Object data, Object errors) {
       this.message = message;
       this.statusCode = statusCode;
       this.status = status;
       this.data = data;
-      this.error = error;
+      this.errors = errors;
    }
 
 }
