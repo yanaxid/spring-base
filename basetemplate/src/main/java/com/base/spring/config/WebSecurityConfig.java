@@ -11,8 +11,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.base.spring.jwt.AuthEntryPointJwt;
-import com.base.spring.jwt.AuthTokenFilter;
+import com.base.spring.security.AuthEntryPointJwt;
+import com.base.spring.security.AuthTokenFilter;
 import lombok.RequiredArgsConstructor;
 
 @Configuration
@@ -42,8 +42,17 @@ public class WebSecurityConfig {
               .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
               .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
               .authorizeHttpRequests(authz -> authz
-                      .requestMatchers("/api/v1/auth/**", "/api/v1/all").permitAll()
-                      .requestMatchers("/api/v1/product/**").permitAll()
+                      .requestMatchers(
+                              "/api/v1/auth/**",
+                              "/api/v1/all",
+                              "/api/v1/product/**",
+
+                              // 👇 Tambahkan ini untuk Swagger
+                              "/swagger-ui/**",
+                              "/v3/api-docs/**",
+                              "/swagger-ui.html"
+                      ).permitAll()
+
                       .requestMatchers("/api/v1/user/**").hasAnyAuthority("ADMIN", "USER")
                       .requestMatchers("/api/v1/admin/**").hasAuthority("ADMIN")
                       .anyRequest().authenticated()

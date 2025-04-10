@@ -1,43 +1,45 @@
 package com.base.spring.enums;
 
+
+import lombok.Getter;
+
+@Getter
 public enum MessageKey {
-    ERROR_SERVER("error.server"),
+
+    // --- SUCCESS MESSAGES ---
     SUCCESS_SAVE_DATA("success.save.data"),
     SUCCESS_GET_DATA("success.get.data"),
-    ERROR_NOT_FOUND("error.not.found"),
     SUCCESS_NO_CHANGE("success.no.change"),
     SUCCESS_UPDATE_DATA("success.update.data"),
     SUCCESS_DELETE_DATA("success.delete.data"),
-    VALIDATION_REQUIRED("validation.required"),
+
+    // --- VALIDATION ERRORS ---
     VALIDATION_INVALID_FORMAT("validation.invalid.format"),
-    VALIDATION_INVALID_LENGTH("validation.invalid.length"),
-    ERROR_GENERAL("error.general"),
 
 
-    //   GENERAL ERROR
+    // --- GENERAL ERRORS ---
+    ERROR_SERVER("error.server"),
+    ERROR_NOT_FOUND("error.not.found"),
     FAILED_TO_PROCESS("failed.to.process"),
+    ERROR_DATA_CONFLICT("error.data.conflict"),
+    ERROR_ACCESS_DENIED("error.access.denied"),
+    ERROR_METHOD_NOT_ALLOWED("error.method.not.allowed"),
 
-    //  AUTH
+    // --- AUTH MESSAGES ---
     SUCCESS_SIGNUP("success.signup"),
     SUCCESS_SIGNIN("success.signin"),
     SUCCESS_LOGOUT("success.logout"),
     TOKEN_BLOCKED("token.blocked"),
+    AUTHENTICATION_FAILED("authentication.failed"),
+    UNAUTHORIZED("error.unauthorized"),
 
-
-    //   PRODUCT
-    NOT_FOUND("not.found"),
-
-    ERROR_DATA_CONFLICT("error.data.conflict");
-
+    // --- DOMAIN SPECIFIC ---
+    NOT_FOUND("not.found");
 
     private final String key;
 
     MessageKey(String key) {
         this.key = key;
-    }
-
-    public String getKey() {
-        return key;
     }
 
 }

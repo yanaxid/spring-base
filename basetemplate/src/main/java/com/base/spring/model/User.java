@@ -1,5 +1,6 @@
 package com.base.spring.model;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;

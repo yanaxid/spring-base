@@ -12,7 +12,4 @@ public class UserController {
    public String userAccess() {
       return "User !!! Content.";
    }
-
-
-
 }
